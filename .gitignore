@@ -1,0 +1,11 @@
+*.sw*
+*.o
+*.mod
+*genmod*
+build/
+*.i90
+*__pycache__*
+.mypy_chache/*
+.vscode
+fort*
+*test.ipynb
