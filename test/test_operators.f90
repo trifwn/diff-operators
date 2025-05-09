@@ -2,6 +2,7 @@ module test_operators
    use MPI
    ! use data_communication, only: commit_array, distribute, collect, free_vars
    use serial_vector_field_operators
+   use custom_stencil_derivatives, only: calculate_derivative
    use iso_fortran_env, only: real64
 
    implicit none
