@@ -1,7 +1,7 @@
 program test_compact_derivatives
     use iso_fortran_env, only: real64, output_unit
     use compact_derivatives
-    use custom_stencil_derivatives, only: calculate_derivative  ! Optional: for comparison
+    use custom_stencil_derivatives, only: compute_derivative  ! Optional: for comparison
     implicit none
     
     ! Parameters for testing
@@ -22,7 +22,9 @@ program test_compact_derivatives
     ! Error metrics
     real(real64) :: l2_error_compact, l2_error_fd
     real(real64) :: max_error_compact, max_error_fd
-    
+
+    ! File name for output
+    character(len=100) :: filename
     ! Initialize stencils for compact schemes
     
     ! 4th-order compact scheme for first derivative
@@ -62,7 +64,7 @@ program test_compact_derivatives
             df_compact = compute_compact_derivative(f, dx, 1, lhs_4th_order, rhs_4th_order)
             
             ! Compare with standard finite difference (if available)
-            df_fd = calculate_derivative(f, dx, 1, 1)
+            df_fd = compute_derivative(f, dx, 1, 1)
             
         case(2)
             print *, "Test Case 2: f(x) = sin(x), second derivative"
@@ -73,7 +75,7 @@ program test_compact_derivatives
             df_compact = compute_compact_derivative(f, dx, 2, lhs_2nd_deriv, rhs_2nd_deriv)
             
             ! Compare with standard finite difference (if available)
-            df_fd = calculate_derivative(f, dx, 1, 2)
+            df_fd = compute_derivative(f, dx, 1, 2)
             
         case(3)
             print *, "Test Case 3: f(x) = exp(sin(x)), first derivative"
@@ -84,7 +86,7 @@ program test_compact_derivatives
             df_compact = compute_compact_derivative(f, dx, 1, lhs_6th_order, rhs_6th_order)
             
             ! Compare with standard finite difference (if available)
-            df_fd = calculate_derivative(f, dx, 1, 1)
+            df_fd = compute_derivative(f, dx, 1, 1)
             
         case(4)
             print *, "Test Case 4: f(x) = x^3, first derivative"
@@ -95,7 +97,7 @@ program test_compact_derivatives
             df_compact = compute_compact_derivative(f, dx, 1, lhs_4th_order, rhs_4th_order)
             
             ! Compare with standard finite difference (if available)
-            df_fd = calculate_derivative(f, dx, 1, 1)
+            df_fd = compute_derivative(f, dx, 1, 1)
         end select
         
         ! Compute error metrics (excluding boundary points for fairness)
@@ -118,9 +120,8 @@ program test_compact_derivatives
         print *, ""
         
         ! Output data to file for visualization if desired
-        if (test_case == 1) then
-            call write_results("test_case1.dat", x, f, df_exact, df_compact, df_fd)
-        end if
+        write(filename, "(A,I3.3,A)") "test_case", test_case, ".dat"
+        call write_results(filename, x, f, df_exact, df_compact, df_fd)
     end do
     
     ! Test 2D derivatives

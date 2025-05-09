@@ -2,7 +2,7 @@ module test_operators
    use MPI
    ! use data_communication, only: commit_array, distribute, collect, free_vars
    use serial_vector_field_operators
-   use custom_stencil_derivatives, only: calculate_derivative
+   use custom_stencil_derivatives, only: compute_derivative
    use iso_fortran_env, only: real64
 
    implicit none
@@ -82,7 +82,7 @@ contains
          total_tests = total_tests + 1
          print *, "Test 1: Derivative Calculation"
          print *, "  - Calculating x-derivative..."
-         scalar_df = calculate_derivative(scalar_f, dx, dy, dz, 1, 1)
+         scalar_df = compute_derivative(scalar_f, dx, dy, dz, 1, 1)
          ! Check if the derivative is calculated correctly
          test_passed = .true.
          do k = 1, nz
@@ -184,7 +184,7 @@ contains
          end do
 
          print *, "  - Calculating x-derivative of the vector field..."
-         df = calculate_derivative(f, dx, dy, dz, 1, 1)
+         df = compute_derivative(f, dx, dy, dz, 1, 1)
 
          test_passed = .true.
          do l = 1, nz

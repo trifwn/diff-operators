@@ -44,4 +44,14 @@ def plot_results(filename):
     plt.show()
 
 if __name__ == "__main__":
-    plot_results("test_case1.dat")
+    # Test case
+    import os
+    test_case_dir = os.path.dirname(__file__)
+    # Find all test_case.*.dat files in the directory
+    test_case_files = [f for f in os.listdir(test_case_dir) if f.startswith("test_case") and f.endswith(".dat")]
+    if not test_case_files:
+        print("No test_case.*.dat files found.")
+    else:
+        for test_case_file in test_case_files:
+            print(f"Plotting results for {test_case_file}...")
+            plot_results(test_case_file)

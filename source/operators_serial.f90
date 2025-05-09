@@ -1,7 +1,7 @@
 module serial_vector_field_operators
     ! use omp_lib
     use iso_fortran_env, only: real64
-    use custom_stencil_derivatives, only: calculate_derivative
+    use custom_stencil_derivatives, only: compute_derivative
     implicit none
 
     
@@ -68,9 +68,9 @@ contains
         nz = size(f, 3)
 
         allocate (jac(3, nx, ny, nz))
-        jac(1, :, :, :) = calculate_derivative(f, dx, dy, dz, 1, 1)
-        jac(2, :, :, :) = calculate_derivative(f, dx, dy, dz, 2, 1)
-        jac(3, :, :, :) = calculate_derivative(f, dx, dy, dz, 3, 1)
+        jac(1, :, :, :) = compute_derivative(f, dx, dy, dz, 1, 1)
+        jac(2, :, :, :) = compute_derivative(f, dx, dy, dz, 2, 1)
+        jac(3, :, :, :) = compute_derivative(f, dx, dy, dz, 3, 1)
     end function calculate_scalar_jacobian
 
     module function calculate_vector_jacobian(f, dx, dy, dz) result(jac)
@@ -101,27 +101,27 @@ contains
 
         allocate (hes(3, 3, size(f, 1), size(f, 2), size(f, 3)))
 
-        fx = calculate_derivative(f, dx, dy, dz, 1, 1)
-        fy = calculate_derivative(f, dx, dy, dz, 2, 1)
-        fz = calculate_derivative(f, dx, dy, dz, 3, 1)
+        fx = compute_derivative(f, dx, dy, dz, 1, 1)
+        fy = compute_derivative(f, dx, dy, dz, 2, 1)
+        fz = compute_derivative(f, dx, dy, dz, 3, 1)
 
         ! Diagonal elements
-        hes(1, 1, :, :, :) = calculate_derivative(f, dx, dy, dz, 1, 2)
-        hes(2, 2, :, :, :) = calculate_derivative(f, dx, dy, dz, 2, 2)
-        hes(3, 3, :, :, :) = calculate_derivative(f, dx, dy, dz, 3, 2)
+        hes(1, 1, :, :, :) = compute_derivative(f, dx, dy, dz, 1, 2)
+        hes(2, 2, :, :, :) = compute_derivative(f, dx, dy, dz, 2, 2)
+        hes(3, 3, :, :, :) = compute_derivative(f, dx, dy, dz, 3, 2)
 
         ! Off-diagonal elements
-        hes(1, 2, :, :, :) = calculate_derivative(fx, dx, dy, dz, 2, 1)
-        hes(1, 3, :, :, :) = calculate_derivative(fx, dx, dy, dz, 3, 1)
-        hes(2, 3, :, :, :) = calculate_derivative(fy, dx, dy, dz, 3, 1)
+        hes(1, 2, :, :, :) = compute_derivative(fx, dx, dy, dz, 2, 1)
+        hes(1, 3, :, :, :) = compute_derivative(fx, dx, dy, dz, 3, 1)
+        hes(2, 3, :, :, :) = compute_derivative(fy, dx, dy, dz, 3, 1)
         if (.true.) then ! Symmetric matrix
             hes(2, 1, :, :, :) = hes(1, 2, :, :, :)
             hes(3, 1, :, :, :) = hes(1, 3, :, :, :)
             hes(3, 2, :, :, :) = hes(2, 3, :, :, :)
         else             ! Non-symmetric matrix
-            hes(2, 1, :, :, :) = calculate_derivative(fy, dx, dy, dz, 1, 1)
-            hes(3, 1, :, :, :) = calculate_derivative(fz, dx, dy, dz, 1, 1)
-            hes(3, 2, :, :, :) = calculate_derivative(fz, dx, dy, dz, 2, 1)
+            hes(2, 1, :, :, :) = compute_derivative(fy, dx, dy, dz, 1, 1)
+            hes(3, 1, :, :, :) = compute_derivative(fz, dx, dy, dz, 1, 1)
+            hes(3, 2, :, :, :) = compute_derivative(fz, dx, dy, dz, 2, 1)
         end if
         deallocate (fx, fy, fz)
     end function calculate_scalar_hessian
@@ -162,9 +162,9 @@ contains
         end if
 
         allocate (div_result(nx, ny, nz))
-        div_result(:, :, :) = calculate_derivative(f(1, :, :, :), dx, dy, dz, 1, 1) + &
-                              calculate_derivative(f(2, :, :, :), dx, dy, dz, 2, 1) + &
-                              calculate_derivative(f(3, :, :, :), dx, dy, dz, 3, 1)
+        div_result(:, :, :) = compute_derivative(f(1, :, :, :), dx, dy, dz, 1, 1) + &
+                              compute_derivative(f(2, :, :, :), dx, dy, dz, 2, 1) + &
+                              compute_derivative(f(3, :, :, :), dx, dy, dz, 3, 1)
     end function divergence
 
     function curl(f, dx, dy, dz) result(result_curl)
@@ -194,14 +194,14 @@ contains
         ! The curl of a vector field is given by:
         ! curl(F) = (dF3/dy - dF2/dz, dF1/dz - dF3/dx, dF2/dx - dF1/dy)
         !         = (J32 - J23      , J13 - J31      , J21 - J12      )
-        J1 = calculate_derivative(f(3, :, :, :), dx, dy, dz, 2, 1) ! dF3/dy = J32
-        J2 = calculate_derivative(f(2, :, :, :), dx, dy, dz, 3, 1) ! dF2/dz = J23
+        J1 = compute_derivative(f(3, :, :, :), dx, dy, dz, 2, 1) ! dF3/dy = J32
+        J2 = compute_derivative(f(2, :, :, :), dx, dy, dz, 3, 1) ! dF2/dz = J23
         result_curl(1, :, :, :) = J1 - J2                          ! dF3/dy - dF2/dz = J32 - J23
-        J1 = calculate_derivative(f(1, :, :, :), dx, dy, dz, 3, 1) ! dF1/dz = J13
-        J2 = calculate_derivative(f(3, :, :, :), dx, dy, dz, 1, 1) ! dF3/dx = J31
+        J1 = compute_derivative(f(1, :, :, :), dx, dy, dz, 3, 1) ! dF1/dz = J13
+        J2 = compute_derivative(f(3, :, :, :), dx, dy, dz, 1, 1) ! dF3/dx = J31
         result_curl(2, :, :, :) = J1 - J2                          ! dF1/dz - dF3/dx = J13 - J31
-        J1 = calculate_derivative(f(2, :, :, :), dx, dy, dz, 1, 1) ! dF2/dx = J21
-        J2 = calculate_derivative(f(1, :, :, :), dx, dy, dz, 2, 1) ! dF1/dy = J12
+        J1 = compute_derivative(f(2, :, :, :), dx, dy, dz, 1, 1) ! dF2/dx = J21
+        J2 = compute_derivative(f(1, :, :, :), dx, dy, dz, 2, 1) ! dF1/dy = J12
         result_curl(3, :, :, :) = J1 - J2                          ! dF2/dx - dF1/dy = J21 - J12
 
         deallocate (J1, J2)
@@ -218,9 +218,9 @@ contains
         nz = size(f, 3)
 
         allocate (result_grad(3, nx, ny, nz))
-        result_grad(1, :, :, :) = calculate_derivative(f(:, :, :), dx, dy, dz, 1, 1)
-        result_grad(2, :, :, :) = calculate_derivative(f(:, :, :), dx, dy, dz, 2, 1)
-        result_grad(3, :, :, :) = calculate_derivative(f(:, :, :), dx, dy, dz, 3, 1)
+        result_grad(1, :, :, :) = compute_derivative(f(:, :, :), dx, dy, dz, 1, 1)
+        result_grad(2, :, :, :) = compute_derivative(f(:, :, :), dx, dy, dz, 2, 1)
+        result_grad(3, :, :, :) = compute_derivative(f(:, :, :), dx, dy, dz, 3, 1)
     end function gradient
 
     module function calculate_scalar_laplacian(f, dx, dy, dz) result(result_lapl)
@@ -234,9 +234,9 @@ contains
         nz = size(f, 3)
 
         allocate (result_lapl(nx, ny, nz))
-        result_lapl(:, :, :) = calculate_derivative(f(:, :, :), dx, dy, dz, 1, 2) + &
-                               calculate_derivative(f(:, :, :), dx, dy, dz, 2, 2) + &
-                               calculate_derivative(f(:, :, :), dx, dy, dz, 3, 2)
+        result_lapl(:, :, :) = compute_derivative(f(:, :, :), dx, dy, dz, 1, 2) + &
+                               compute_derivative(f(:, :, :), dx, dy, dz, 2, 2) + &
+                               compute_derivative(f(:, :, :), dx, dy, dz, 3, 2)
     end function calculate_scalar_laplacian
 
     module function calculate_vector_laplacian(f, dx, dy, dz) result(result_lapl)
@@ -253,9 +253,9 @@ contains
         allocate (result_lapl(neq, nx, ny, nz))
         !$omp parallel do
         do i = 1, neq
-            result_lapl(i, :, :, :) = calculate_derivative(f(i, :, :, :), dx, dy, dz, 1, 2) + &
-                                      calculate_derivative(f(i, :, :, :), dx, dy, dz, 2, 2) + &
-                                      calculate_derivative(f(i, :, :, :), dx, dy, dz, 3, 2)
+            result_lapl(i, :, :, :) = compute_derivative(f(i, :, :, :), dx, dy, dz, 1, 2) + &
+                                      compute_derivative(f(i, :, :, :), dx, dy, dz, 2, 2) + &
+                                      compute_derivative(f(i, :, :, :), dx, dy, dz, 3, 2)
         end do
         !$omp end parallel do
     end function calculate_vector_laplacian

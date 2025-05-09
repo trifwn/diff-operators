@@ -2,10 +2,10 @@ module custom_stencil_derivatives
     ! use omp_lib
     use iso_fortran_env, only: real64
     implicit none
-    public :: calculate_derivative
+    public :: compute_derivative
 
-    interface calculate_derivative
-        module function calculate_derivative_1d(f, dx, dim, order, stencil) result(df)
+    interface compute_derivative
+        module function derivative_1d(f, dx, dim, order, stencil) result(df)
             implicit none
             real(real64), intent(in), target :: f(:)
             real(real64), intent(in) :: dx
@@ -14,7 +14,7 @@ module custom_stencil_derivatives
             real(real64), allocatable        :: df(:)
         end function
 
-        module function calculate_vector_derivative_1d(f, dx, dim, order, stencil) result(df)
+        module function vector_derivative_1d(f, dx, dim, order, stencil) result(df)
             implicit none
             real(real64), intent(in), target :: f(:, :)
             real(real64), intent(in)         :: dx
@@ -23,7 +23,7 @@ module custom_stencil_derivatives
             real(real64), allocatable        :: df(:, :)
         end function
 
-        module function calculate_derivative_2d(f, dx, dy, dim, order, stencil) result(df)
+        module function derivative_2d(f, dx, dy, dim, order, stencil) result(df)
             implicit none
             real(real64), intent(in), target :: f(:, :)
             real(real64), intent(in)         :: dx, dy
@@ -32,7 +32,7 @@ module custom_stencil_derivatives
             real(real64), allocatable        :: df(:, :)
         end function
 
-        module function calculate_vector_derivative_2d(f, dx, dy, dim, order, stencil) result(df)
+        module function vector_derivative_2d(f, dx, dy, dim, order, stencil) result(df)
             implicit none
             real(real64), intent(in), target :: f(:, :, :)
             real(real64), intent(in)         :: dx, dy
@@ -41,7 +41,7 @@ module custom_stencil_derivatives
             real(real64), allocatable        :: df(:, :, :)
         end function
 
-        module function calculate_derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
+        module function derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
             implicit none
             real(real64), intent(in), target :: f(:, :, :)
             real(real64), intent(in)         :: dx, dy, dz
@@ -50,7 +50,7 @@ module custom_stencil_derivatives
             real(real64), allocatable        :: df(:, :, :)
         end function
 
-        module function calculate_vector_derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
+        module function vector_derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
             implicit none
             real(real64), intent(in), target :: f(:, :, :, :)
             real(real64), intent(in)         :: dx, dy, dz
@@ -58,7 +58,7 @@ module custom_stencil_derivatives
             real(real64), optional, intent(in) :: stencil(:)
             real(real64), allocatable        :: df(:, :, :, :)
         end function
-    end interface calculate_derivative
+    end interface compute_derivative
 
     ! Private helper procedures
     private :: apply_stencil_1d
@@ -90,7 +90,7 @@ contains
         derivative = sum / (dx**order)
     end function apply_stencil_1d
 
-    module function calculate_derivative_1d(f, dx, dim, order, stencil) result(df)
+    module function derivative_1d(f, dx, dim, order, stencil) result(df)
         real(real64), intent(in), target :: f(:)
         real(real64), intent(in) :: dx
         integer, intent(in) :: dim, order
@@ -132,9 +132,9 @@ contains
                 df(n) = (f(n) - 2*f(n-1) + f(n-2))/(dx**2)
             end select
         end if
-    end function calculate_derivative_1d
+    end function derivative_1d
 
-    module function calculate_derivative_2d(f, dx, dy, dim, order, stencil) result(df)
+    module function derivative_2d(f, dx, dy, dim, order, stencil) result(df)
         real(real64), intent(in), target :: f(:, :)
         real(real64), intent(in) :: dx, dy
         integer, intent(in) :: dim, order
@@ -151,24 +151,24 @@ contains
         case (1)  ! x-derivative
             do j = 1, ny
                 if (present(stencil)) then
-                    df(:, j) = calculate_derivative_1d(f(:, j), dx, 1, order, stencil)
+                    df(:, j) = derivative_1d(f(:, j), dx, 1, order, stencil)
                 else
-                    df(:, j) = calculate_derivative_1d(f(:, j), dx, 1, order)
+                    df(:, j) = derivative_1d(f(:, j), dx, 1, order)
                 end if
             end do
         case (2)  ! y-derivative
             do i = 1, nx
                 if (present(stencil)) then
-                    df(i, :) = calculate_derivative_1d(f(i, :), dy, 1, order, stencil)
+                    df(i, :) = derivative_1d(f(i, :), dy, 1, order, stencil)
                 else
-                    df(i, :) = calculate_derivative_1d(f(i, :), dy, 1, order)
+                    df(i, :) = derivative_1d(f(i, :), dy, 1, order)
                 end if
             end do
         end select
         !$omp end parallel do
-    end function calculate_derivative_2d
+    end function derivative_2d
 
-    module function calculate_derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
+    module function derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
         real(real64), intent(in), target  :: f(:, :, :)
         real(real64), intent(in) :: dx, dy, dz
         integer, intent(in) :: dim, order
@@ -188,9 +188,9 @@ contains
             do k = 1, nz
                 do j = 1, ny
                     if (present(stencil)) then
-                        df(:, j, k) = calculate_derivative_1d(f(:, j, k), dx, 1, order, stencil)
+                        df(:, j, k) = derivative_1d(f(:, j, k), dx, 1, order, stencil)
                     else
-                        df(:, j, k) = calculate_derivative_1d(f(:, j, k), dx, 1, order)
+                        df(:, j, k) = derivative_1d(f(:, j, k), dx, 1, order)
                     end if
                 end do
             end do
@@ -198,9 +198,9 @@ contains
             do k = 1, nz
                 do i = 1, nx
                     if (present(stencil)) then
-                        df(i, :, k) = calculate_derivative_1d(f(i, :, k), dy, 1, order, stencil)
+                        df(i, :, k) = derivative_1d(f(i, :, k), dy, 1, order, stencil)
                     else
-                        df(i, :, k) = calculate_derivative_1d(f(i, :, k), dy, 1, order)
+                        df(i, :, k) = derivative_1d(f(i, :, k), dy, 1, order)
                     end if
                 end do
             end do
@@ -208,17 +208,17 @@ contains
             do j = 1, ny
                 do i = 1, nx
                     if (present(stencil)) then
-                        df(i, j, :) = calculate_derivative_1d(f(i, j, :), dz, 1, order, stencil)
+                        df(i, j, :) = derivative_1d(f(i, j, :), dz, 1, order, stencil)
                     else
-                        df(i, j, :) = calculate_derivative_1d(f(i, j, :), dz, 1, order)
+                        df(i, j, :) = derivative_1d(f(i, j, :), dz, 1, order)
                     end if
                 end do
             end do
         end select
         !$omp end parallel do
-    end function calculate_derivative_3d
+    end function derivative_3d
 
-    module function calculate_vector_derivative_1d(f, dx, dim, order, stencil) result(df)
+    module function vector_derivative_1d(f, dx, dim, order, stencil) result(df)
         real(real64), intent(in), target :: f(:, :)
         real(real64), intent(in) :: dx
         integer, intent(in) :: dim, order
@@ -233,15 +233,15 @@ contains
         !$omp parallel do
         do i = 1, neq
             if (present(stencil)) then
-                df(i, :) = calculate_derivative_1d(f(i, :), dx, dim, order, stencil)
+                df(i, :) = derivative_1d(f(i, :), dx, dim, order, stencil)
             else
-                df(i, :) = calculate_derivative_1d(f(i, :), dx, dim, order)
+                df(i, :) = derivative_1d(f(i, :), dx, dim, order)
             end if
         end do
         !$omp end parallel do
-    end function calculate_vector_derivative_1d
+    end function vector_derivative_1d
 
-    module function calculate_vector_derivative_2d(f, dx, dy, dim, order, stencil) result(df)
+    module function vector_derivative_2d(f, dx, dy, dim, order, stencil) result(df)
         real(real64), intent(in), target :: f(:, :, :)
         real(real64), intent(in) ::  dx, dy
         integer, intent(in) :: dim, order
@@ -259,22 +259,22 @@ contains
             select case (dim)
             case (1)  ! x-derivative
                 if (present(stencil)) then
-                    df(i, :, :) = calculate_derivative_2d(f(i, :, :), dx, dy, 1, order, stencil)
+                    df(i, :, :) = derivative_2d(f(i, :, :), dx, dy, 1, order, stencil)
                 else
-                    df(i, :, :) = calculate_derivative_2d(f(i, :, :), dx, dy, 1, order)
+                    df(i, :, :) = derivative_2d(f(i, :, :), dx, dy, 1, order)
                 end if
             case (2)  ! y-derivative
                 if (present(stencil)) then
-                    df(i, :, :) = calculate_derivative_2d(f(i, :, :), dx, dy, 2, order, stencil)
+                    df(i, :, :) = derivative_2d(f(i, :, :), dx, dy, 2, order, stencil)
                 else
-                    df(i, :, :) = calculate_derivative_2d(f(i, :, :), dx, dy, 2, order)
+                    df(i, :, :) = derivative_2d(f(i, :, :), dx, dy, 2, order)
                 end if
             end select
         end do
         !$omp end parallel do
-    end function calculate_vector_derivative_2d
+    end function vector_derivative_2d
 
-    module function calculate_vector_derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
+    module function vector_derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
         real(real64), intent(in), target :: f(:, :, :, :)
         real(real64), intent(in) ::  dx, dy, dz
         integer, intent(in) :: dim, order
@@ -293,24 +293,24 @@ contains
             select case (dim)
             case (1)  ! x-derivative
                 if (present(stencil)) then
-                    df(eq, :, :, :) = calculate_derivative_3d(f(eq, :, :, :), dx, dy, dz, 1, order, stencil)
+                    df(eq, :, :, :) = derivative_3d(f(eq, :, :, :), dx, dy, dz, 1, order, stencil)
                 else
-                    df(eq, :, :, :) = calculate_derivative_3d(f(eq, :, :, :), dx, dy, dz, 1, order)
+                    df(eq, :, :, :) = derivative_3d(f(eq, :, :, :), dx, dy, dz, 1, order)
                 end if
             case (2)  ! y-derivative
                 if (present(stencil)) then
-                    df(eq, :, :, :) = calculate_derivative_3d(f(eq, :, :, :), dx, dy, dz, 2, order, stencil)
+                    df(eq, :, :, :) = derivative_3d(f(eq, :, :, :), dx, dy, dz, 2, order, stencil)
                 else
-                    df(eq, :, :, :) = calculate_derivative_3d(f(eq, :, :, :), dx, dy, dz, 2, order)
+                    df(eq, :, :, :) = derivative_3d(f(eq, :, :, :), dx, dy, dz, 2, order)
                 end if
             case (3)  ! z-derivative
                 if (present(stencil)) then
-                    df(eq, :, :, :) = calculate_derivative_3d(f(eq, :, :, :), dx, dy, dz, 3, order, stencil)
+                    df(eq, :, :, :) = derivative_3d(f(eq, :, :, :), dx, dy, dz, 3, order, stencil)
                 else
-                    df(eq, :, :, :) = calculate_derivative_3d(f(eq, :, :, :), dx, dy, dz, 3, order)
+                    df(eq, :, :, :) = derivative_3d(f(eq, :, :, :), dx, dy, dz, 3, order)
                 end if
             end select
         end do
         !$omp end parallel do
-    end function calculate_vector_derivative_3d
+    end function vector_derivative_3d
 end module custom_stencil_derivatives
