@@ -3,6 +3,7 @@
 *.mod
 *genmod*
 build/
+build_check/
 *.i90
 *__pycache__*
 .mypy_chache/*
