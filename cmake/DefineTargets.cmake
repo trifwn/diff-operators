@@ -34,6 +34,19 @@ function(define_targets)
     target_link_libraries(bench_scaling PUBLIC compact_derivatives custom_stencil_derivatives)
 
     # -------------------------------------------------------------------------------------------------
+    #                                           MPI Test Executable
+    # -------------------------------------------------------------------------------------------------
+    find_package(MPI COMPONENTS Fortran)
+    if(MPI_Fortran_FOUND)
+        add_executable(test_mpi ${SRC_TEST}/test_mpi.f90)
+        target_link_libraries(test_mpi PUBLIC data_com MPI::MPI_Fortran)
+        target_include_directories(test_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
+        target_link_libraries(data_com PRIVATE MPI::MPI_Fortran)
+    else()
+        message(STATUS "MPI not found - skipping test_mpi target")
+    endif()
+
+    # -------------------------------------------------------------------------------------------------
     #                                          Compiler Flags
     # -------------------------------------------------------------------------------------------------
 
@@ -46,4 +59,7 @@ function(define_targets)
     set_compiler_flags(test_operators)
     set_compiler_flags(test_compact)
     set_compiler_flags(bench_scaling)
+    if(MPI_Fortran_FOUND)
+        set_compiler_flags(test_mpi)
+    endif()
 endfunction()
