@@ -146,9 +146,9 @@ contains
         ny = size(f, 2)
         allocate(df(nx, ny))
 
-        !$omp parallel do 
         select case (dim)
         case (1)  ! x-derivative
+            !$omp parallel do
             do j = 1, ny
                 if (present(stencil)) then
                     df(:, j) = derivative_1d(f(:, j), dx, 1, order, stencil)
@@ -156,7 +156,9 @@ contains
                     df(:, j) = derivative_1d(f(:, j), dx, 1, order)
                 end if
             end do
+            !$omp end parallel do
         case (2)  ! y-derivative
+            !$omp parallel do
             do i = 1, nx
                 if (present(stencil)) then
                     df(i, :) = derivative_1d(f(i, :), dy, 1, order, stencil)
@@ -164,8 +166,8 @@ contains
                     df(i, :) = derivative_1d(f(i, :), dy, 1, order)
                 end if
             end do
+            !$omp end parallel do
         end select
-        !$omp end parallel do
     end function derivative_2d
 
     module function derivative_3d(f, dx, dy, dz, dim, order, stencil) result(df)
@@ -182,9 +184,9 @@ contains
 
         allocate(df(nx, ny, nz))
 
-        !$omp parallel do collapse(2)
         select case (dim)
         case (1)  ! x-derivative
+            !$omp parallel do collapse(2)
             do k = 1, nz
                 do j = 1, ny
                     if (present(stencil)) then
@@ -194,7 +196,9 @@ contains
                     end if
                 end do
             end do
+            !$omp end parallel do
         case (2)  ! y-derivative
+            !$omp parallel do collapse(2)
             do k = 1, nz
                 do i = 1, nx
                     if (present(stencil)) then
@@ -204,7 +208,9 @@ contains
                     end if
                 end do
             end do
+            !$omp end parallel do
         case (3)  ! z-derivative
+            !$omp parallel do collapse(2)
             do j = 1, ny
                 do i = 1, nx
                     if (present(stencil)) then
@@ -214,8 +220,8 @@ contains
                     end if
                 end do
             end do
+            !$omp end parallel do
         end select
-        !$omp end parallel do
     end function derivative_3d
 
     module function vector_derivative_1d(f, dx, dim, order, stencil) result(df)

@@ -30,12 +30,20 @@ function(define_targets)
     add_executable(test_compact ${SRC_TEST}/test_compact.f90)
     target_link_libraries(test_compact PUBLIC compact_derivatives operators_serial custom_stencil_derivatives)
 
+    add_executable(bench_scaling ${SRC_TEST}/bench_scaling.f90)
+    target_link_libraries(bench_scaling PUBLIC compact_derivatives custom_stencil_derivatives)
+
     # -------------------------------------------------------------------------------------------------
     #                                          Compiler Flags
     # -------------------------------------------------------------------------------------------------
 
     # Set Fortran compiler flags for all targets
-    set_compiler_flags(data_com)
+    set_compiler_flags(derivatives_old)
+    set_compiler_flags(custom_stencil_derivatives)
+    set_compiler_flags(compact_derivatives)
     set_compiler_flags(operators_serial)
+    set_compiler_flags(data_com)
     set_compiler_flags(test_operators)
+    set_compiler_flags(test_compact)
+    set_compiler_flags(bench_scaling)
 endfunction()

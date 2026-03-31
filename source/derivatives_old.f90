@@ -106,18 +106,20 @@ contains
         ny = size(f, 2)
         allocate (df(nx, ny))
 
-        !$omp parallel do 
         select case (dim)
         case (1)  ! x-derivative
+            !$omp parallel do
             do j = 1, ny
                 df(:, j) = calculate_derivative_1d(f(:, j), dx, 1, order)
             end do
+            !$omp end parallel do
         case (2)  ! y-derivative
+            !$omp parallel do
             do i = 1, nx
                 df(i, :) = calculate_derivative_1d(f(i, :), dy, 1, order)
             end do
+            !$omp end parallel do
         end select
-        !$omp end parallel do
     end function calculate_derivative_2d
 
     module function calculate_derivative_3d(f, dx, dy, dz, dim, order) result(df)
@@ -133,28 +135,32 @@ contains
 
         allocate (df(nx, ny, nz))
 
-        !$omp parallel do collapse(2)
         select case (dim)
         case (1)  ! x-derivative
+            !$omp parallel do collapse(2)
             do k = 1, nz
                 do j = 1, ny
                     df(:, j, k) = calculate_derivative_1d(f(:, j, k), dx, 1, order)
                 end do
             end do
+            !$omp end parallel do
         case (2)  ! y-derivative
+            !$omp parallel do collapse(2)
             do k = 1, nz
                 do i = 1, nx
                     df(i, :, k) = calculate_derivative_1d(f(i, :, k), dy, 1, order)
                 end do
             end do
+            !$omp end parallel do
         case (3)  ! z-derivative
+            !$omp parallel do collapse(2)
             do j = 1, ny
                 do i = 1, nx
                     df(i, j, :) = calculate_derivative_1d(f(i, j, :), dz, 1, order)
                 end do
             end do
+            !$omp end parallel do
         end select
-        !$omp end parallel do
     end function calculate_derivative_3d
 
     module function calculate_vector_derivative_1d(f, dx, dim, order) result(df)
